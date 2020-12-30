@@ -6,12 +6,14 @@ import pandas as pd
 import numpy as np
 from typing import List, Optional
 from dash.dependencies import Input, Output
+from constants import WEEKDAYS, MONTHS
+from models.hinge.match import Match
 from parsers.youtube.views_parser import ViewsParser as YoutubeViewsParser
 from parsers.netflix.views_parser import ViewsParser as NetflixViewsParser
+from parsers.hinge.matches_parser import MatchesParser as HingeMatchesParser
 
-WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
+PRODUCTS = ["YouTube", "Netflix", "Hinge"]
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.layout = html.Div(className='page', children=[
@@ -28,7 +30,7 @@ app.layout = html.Div(className='page', children=[
         id='tabs',
         value='Netflix-tab',
         className='tab',
-        children=[dcc.Tab(label=product, value='{0}-tab'.format(product)) for product in ["YouTube", "Netflix"]]
+        children=[dcc.Tab(label=product, value='{0}-tab'.format(product)) for product in PRODUCTS]
     ),
     html.Div(id='tabs-content'),
 ])
@@ -40,51 +42,59 @@ app.layout = html.Div(className='page', children=[
 def render_content(tab):
     if tab == 'Netflix-tab':
         return html.Div(className="tab-content", children=[
-            # html.H1(children='Netflix'),
-            html.Div(className='chart', children=[
-                html.H2(id='Netflix-weekday-title', className='chart-title'),
-                dcc.Graph(id='Netflix-weekday-bar-chart'),
-            ]),
-            html.Div(className='chart', children=[
-                html.H2(id='Netflix-month-title', className='chart-title'),
-                dcc.Graph(id='Netflix-month-bar-chart')
+            html.Div(className='tab-content-row', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children="Hours Watched per Weekday", className='chart-title'),
+                    dcc.Graph(id='Netflix-weekday-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Hours Watched by Month', className='chart-title'),
+                    dcc.Graph(id='Netflix-month-bar-chart')
+                ]),
             ]),
         ]),
     elif tab == 'YouTube-tab':
         return html.Div(className="tab-content", children=[
-            # html.H1(children='YouTube'),
-            html.Div(className='chart', children=[
-                html.H2(id='YouTube-weekday-title', className='chart-title'),
-                dcc.Graph(id='YouTube-weekday-bar-chart'),
-            ]),
-            html.Div(className='chart', children=[
-                html.H2(id='YouTube-month-title', className='chart-title'),
-                dcc.Graph(id='YouTube-month-bar-chart')
+            html.Div(className='tab-content-row', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children='Videos Viewed per Weekday', className='chart-title'),
+                    dcc.Graph(id='YouTube-weekday-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Videos Viewed by Month', className='chart-title'),
+                    dcc.Graph(id='YouTube-month-bar-chart')
+                ]),
             ]),
         ]),
-
-
-for product in ['YouTube', 'Netflix']:
-    @app.callback(
-        Output('{0}-weekday-title'.format(product), 'children'),
-        Input('year-dropdown', 'value')
-    )
-    def update_weekday_title(year: Optional[int]):
-        return 'Videos Viewed per Weekday: ({0})'.format(year or 'All Time')
-
-    @app.callback(
-        Output('{0}-month-title'.format(product), 'children'),
-        Input('year-dropdown', 'value')
-    )
-    def update_month_title(year: Optional[int]):
-        return 'Videos Viewed per Month: ({0})'.format(year or 'All Time')
-
+    elif tab == 'Hinge-tab':
+        return html.Div(className="tab-content", children=[
+            html.Div(className='tab-content-row', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children='Match Results by Weekday', className='chart-title'),
+                    dcc.Graph(id='Hinge-matches-weekday-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Match Results by Month', className='chart-title'),
+                    dcc.Graph(id='Hinge-matches-month-bar-chart')
+                ]),
+            ]),
+            html.Div(className='tab-content-row', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children='Messages Sent per Weekday', className='chart-title'),
+                    dcc.Graph(id='Hinge-messages-weekday-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Messages Sent per Month', className='chart-title'),
+                    dcc.Graph(id='Hinge-messages-month-bar-chart')
+                ]),
+            ]),
+        ])
 
 @app.callback(
     Output('YouTube-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_YouTube_weekday_bar_chart(year: Optional[int]):
+def update_youtube_weekday_bar_chart(year: Optional[int]):
     views_parser = YoutubeViewsParser(year=year)
     views_by_weekday = views_parser.get_views_by_weekday()
     types: List[str] = []
@@ -95,6 +105,7 @@ def update_YouTube_weekday_bar_chart(year: Optional[int]):
         num_days_in_year = np.busday_count(str(year - 1), str(year), weekmask=WEEKDAYS[i][:3]) if year else 52
         weekdays.append(WEEKDAYS[i])
         view_counts.append(round(len(views) / num_days_in_year, 2))
+
     weekday_bar_chart = px.bar(
         pd.DataFrame({
             "Day": weekdays,
@@ -109,7 +120,7 @@ def update_YouTube_weekday_bar_chart(year: Optional[int]):
     Output('YouTube-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_YouTube_month_bar_chart(year: Optional[int]):
+def update_youtube_month_bar_chart(year: Optional[int]):
     views_parser = YoutubeViewsParser(year=year)
     channels_by_month = views_parser.get_channels_by_month()
     channel_names: List[str] = []
@@ -120,6 +131,7 @@ def update_YouTube_month_bar_chart(year: Optional[int]):
         channel_names += [channel.name for channel in channels]
         view_counts += [len(channel.views) for channel in channels]
         months += [MONTHS[i]] * len(channels)
+
     month_bar_chart = px.bar(
         pd.DataFrame({
             "Month": months,
@@ -132,12 +144,11 @@ def update_YouTube_month_bar_chart(year: Optional[int]):
     )
     return month_bar_chart
 
-
 @app.callback(
     Output('Netflix-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_Netflix_weekday_bar_chart(year: Optional[int]):
+def update_netflix_weekday_bar_chart(year: Optional[int]):
     views_parser = NetflixViewsParser(year=year)
     views_by_weekday = views_parser.get_views_by_weekday()
     types: List[str] = []
@@ -149,17 +160,16 @@ def update_Netflix_weekday_bar_chart(year: Optional[int]):
         movie_views = [view for view in views if not bool(view.show_title)]
         num_days_in_year = np.busday_count(str(year - 1), str(year), weekmask=WEEKDAYS[i][:3])
 
-        if show_views:
-            types.append("Show")
-            weekdays.append(WEEKDAYS[i])
-            total_hours = round(sum([view.duration_seconds / 60 / 60 for view in show_views]), 2)
-            duration_hours.append(round(total_hours / num_days_in_year, 2))
+        types.append("Show")
+        weekdays.append(WEEKDAYS[i])
+        total_hours = round(sum([view.duration_seconds / 60 / 60 for view in show_views]), 2)
+        duration_hours.append(round(total_hours / num_days_in_year, 2))
 
-        if movie_views:
-            types.append("Movie")
-            weekdays.append(WEEKDAYS[i])
-            total_hours = round(sum([view.duration_seconds / 60 / 60 for view in movie_views]), 2)
-            duration_hours.append(round(total_hours / num_days_in_year, 2))
+        types.append("Movie")
+        weekdays.append(WEEKDAYS[i])
+        total_hours = round(sum([view.duration_seconds / 60 / 60 for view in movie_views]), 2)
+        duration_hours.append(round(total_hours / num_days_in_year, 2))
+
     weekday_bar_chart = px.bar(
         pd.DataFrame({
             "Day": weekdays,
@@ -177,7 +187,7 @@ def update_Netflix_weekday_bar_chart(year: Optional[int]):
     Output('Netflix-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_Netflix_month_bar_chart(year: Optional[int]):
+def update_netflix_month_bar_chart(year: Optional[int]):
     views_parser = NetflixViewsParser(year=year)
     shows_by_month = views_parser.get_shows_by_month()
     show_titles: List[str] = []
@@ -188,6 +198,7 @@ def update_Netflix_month_bar_chart(year: Optional[int]):
         show_titles += [show.title for show in shows]
         duration_hours += [round(show.duration_seconds / 60 / 60, 0) for show in shows]
         months += [MONTHS[i]] * len(shows)
+
     month_bar_chart = px.bar(
         pd.DataFrame({
             "Month": months,
@@ -200,6 +211,133 @@ def update_Netflix_month_bar_chart(year: Optional[int]):
     )
     return month_bar_chart
 
+@app.callback(
+    Output('Hinge-matches-weekday-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_hinge_matches_weekday_bar_chart(year: Optional[int]):
+    matches_parser = HingeMatchesParser(year=year)
+    matches_by_weekday = matches_parser.get_matches_by_weekday()
+    types: List[str] = []
+    weekdays: List[str] = []
+    match_counts: List[int] = []
+
+    for i in range(7):
+        matches = matches_by_weekday[i]
+        like_accepted_matches = [match for match in matches if match.like_accepted]
+        user_accepted_matches = [match for match in matches if match.user_accepted]
+        like_rejected_matches = [match for match in matches if match.like_rejected]
+        user_rejected_matches = [match for match in matches if match.user_rejected]
+
+        types.append("Likes sent that were accepted")
+        weekdays.append(WEEKDAYS[i])
+        match_counts.append(len(like_accepted_matches))
+
+        types.append("Likes received that you accepted")
+        weekdays.append(WEEKDAYS[i])
+        match_counts.append(len(user_accepted_matches))
+
+        types.append("Likes sent that were not accepted")
+        weekdays.append(WEEKDAYS[i])
+        match_counts.append(len(like_rejected_matches))
+
+        types.append("Rejections given")
+        weekdays.append(WEEKDAYS[i])
+        match_counts.append(len(user_rejected_matches))
+
+    weekday_bar_chart = px.bar(
+        pd.DataFrame({
+            "Weekday": weekdays,
+            "Matches": match_counts,
+            "Type": types,
+        }),
+        x="Weekday",
+        y="Matches",
+        color="Type"
+    )
+    return weekday_bar_chart
+
+@app.callback(
+    Output('Hinge-matches-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_hinge_matches_month_bar_chart(year: Optional[int]):
+    matches_parser = HingeMatchesParser(year=year)
+    matches_by_month = matches_parser.get_matches_by_month()
+    types: List[str] = []
+    months: List[str] = []
+    match_counts: List[int] = []
+
+    for i in range(12):
+        matches = matches_by_month[i]
+        like_accepted_matches = [match for match in matches if match.like_accepted]
+        user_accepted_matches = [match for match in matches if match.user_accepted]
+        like_rejected_matches = [match for match in matches if match.like_rejected]
+        user_rejected_matches = [match for match in matches if match.user_rejected]
+
+        types.append("Likes sent that were accepted")
+        months.append(MONTHS[i])
+        match_counts.append(len(like_accepted_matches))
+
+        types.append("Likes received that you accepted")
+        months.append(MONTHS[i])
+        match_counts.append(len(user_accepted_matches))
+
+        types.append("Likes sent that were not accepted")
+        months.append(MONTHS[i])
+        match_counts.append(len(like_rejected_matches))
+
+        types.append("Rejections given")
+        months.append(MONTHS[i])
+        match_counts.append(len(user_rejected_matches))
+
+    month_bar_chart = px.bar(
+        pd.DataFrame({
+            "Month": months,
+            "Matches": match_counts,
+            "Type": types,
+        }),
+        x="Month",
+        y="Matches",
+        color="Type"
+    )
+    return month_bar_chart
+
+
+@app.callback(
+    Output('Hinge-messages-weekday-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_hinge_messages_weekday_bar_chart(year: Optional[int]):
+    matches_parser = HingeMatchesParser(year=year)
+    chats_by_weekday = matches_parser.get_chats_by_weekday()
+    weekday_bar_chart = px.bar(
+        pd.DataFrame({
+            "Weekday": WEEKDAYS,
+            "Messages Sent (Total)": [len(chats) for chats in chats_by_weekday],
+        }),
+        x="Weekday",
+        y="Messages Sent (Total)",
+    )
+    return weekday_bar_chart
+
+@app.callback(
+    Output('Hinge-messages-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_hinge_messages_month_bar_chart(year: Optional[int]):
+    matches_parser = HingeMatchesParser(year=year)
+    chats_by_month = matches_parser.get_chats_by_month()
+    month_bar_chart = px.bar(
+        pd.DataFrame({
+            "Month": MONTHS,
+            "Messages Sent (Total)": [len(chats) for chats in chats_by_month],
+        }),
+        x="Month",
+        y="Messages Sent (Total)",
+    )
+    return month_bar_chart
+
 
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_ui=False)
+    app.run_server(debug=True)

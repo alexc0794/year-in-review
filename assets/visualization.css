@@ -10,7 +10,7 @@ body {
   font-size: 20pt;
 }
 
-.tab-content {
+.tab-content-row {
   display: flex;
   justify-content: space-evenly;
 }
