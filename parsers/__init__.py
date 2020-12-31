@@ -27,6 +27,23 @@ class JsonParser(Parser):
             raise
 
 
+class MultiJsonParser(Parser):
+    def __init__(self, relative_path_to_directory: str, filename_prefix: str, year: Optional[int] = None) -> None:
+        super().__init__(year=year)
+        directory_path = '{0}/{1}'.format(os.getcwd(), relative_path_to_directory)
+        data = []
+        for filename in os.listdir(directory_path):
+            if filename.startswith(filename_prefix) and filename.endswith('.json'):
+                filepath = '{0}/{1}'.format(directory_path, filename)
+                try:
+                    with open(filepath) as file:
+                        data += json.load(file)
+                except:
+                    print('There was a problem loading {0}'.format(filepath))
+                    raise
+        self.data = data
+
+
 class CsvParser(Parser):
     columns: List[str]
 
