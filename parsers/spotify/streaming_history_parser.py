@@ -5,6 +5,8 @@ from models.spotify.stream import Stream
 from models.spotify.artist import Artist
 from models.spotify.track import Track
 
+FIVE_MINUTES_IN_SECONDS = 5 * 60
+
 
 class StreamingHistoryParser(MultiJsonParser):
 
@@ -72,11 +74,11 @@ class StreamingHistoryParser(MultiJsonParser):
         stream_duration_by_month = [0]*12
         for month in range(12):
             streams = streams_by_month[month]
-            stream_duration_by_month[month] = int(round(sum([stream.duration_milliseconds for stream in streams]), 0))
+            stream_duration_by_month[month] = int(round(sum([stream.duration_milliseconds / 1000 for stream in streams]), 0))
 
         return stream_duration_by_month
 
-    def get_artists_by_month(self) -> List[List[Artist]]:
+    def get_artists_by_month(self, min_threshold_stream_duration_seconds:int=0) -> List[List[Artist]]:
         artists_by_month = [[] for _ in range(12)]
         streams_by_month = self.get_streams_by_month()
         for month in range(len(streams_by_month)):
@@ -87,13 +89,16 @@ class StreamingHistoryParser(MultiJsonParser):
                 map[artist_name] = map.get(artist_name, []) + [stream]
             artists = []
             for artist_name in list(map.keys()):
-                artists.append(Artist(name=artist_name, streams=map[artist_name]))
+                artist = Artist(name=artist_name, streams=map[artist_name])
+                if artist.streamed_duration_seconds < min_threshold_stream_duration_seconds:
+                    continue
+                artists.append(artist)
             artists.sort(key=lambda artist: artist.streamed_duration_seconds, reverse=True)
             artists_by_month[month] = artists
 
         return artists_by_month
 
-    def get_tracks_by_month(self) -> List[List[Track]]:
+    def get_tracks_by_month(self, min_threshold_stream_duration_seconds:int=0) -> List[List[Track]]:
         tracks_by_month = [[] for _ in range(12)]
         streams_by_month = self.get_streams_by_month()
         for month in range(len(streams_by_month)):
@@ -104,7 +109,10 @@ class StreamingHistoryParser(MultiJsonParser):
                 map[track_name] = map.get(track_name, []) + [stream]
             tracks = []
             for track_name in list(map.keys()):
-                tracks.append(Track(name=track_name, streams=map[track_name]))
+                track = Track(name=track_name, streams=map[track_name])
+                if track.streamed_duration_seconds < min_threshold_stream_duration_seconds:
+                    continue
+                tracks.append(track)
             tracks.sort(key=lambda track: track.streamed_duration_seconds, reverse=True)
             tracks_by_month[month] = tracks
 

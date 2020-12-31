@@ -13,9 +13,10 @@ from parsers.netflix.views_parser import ViewsParser as NetflixViewsParser
 from parsers.hinge.matches_parser import MatchesParser as HingeMatchesParser
 from parsers.instagram.connections_parser import ConnectionsParser as InstagramConnectionsParser
 from parsers.instagram.likes_parser import LikesParser as InstagramLikesParser
+from parsers.spotify.streaming_history_parser import StreamingHistoryParser as SpotifyStreamingHistoryParser
 
 
-PRODUCTS = ['YouTube', 'Netflix', 'Hinge', 'Instagram']
+PRODUCTS = ['YouTube', 'Netflix', 'Hinge', 'Instagram', 'Spotify']
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.layout = html.Div(className='page', children=[
@@ -30,7 +31,7 @@ app.layout = html.Div(className='page', children=[
     ]),
     dcc.Tabs(
         id='tabs',
-        value='Netflix-tab',
+        value='Spotify-tab',
         className='tab',
         children=[dcc.Tab(label=product, value='{0}-tab'.format(product)) for product in PRODUCTS]
     ),
@@ -117,6 +118,23 @@ def render_content(tab):
                 ]),
             ]),
         ])
+    elif tab == 'Spotify-tab':
+        return html.Div(className='tab-content', children=[
+            html.Div(className='tab-content-grid', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children='Streaming by Month', className='chart-title'),
+                    dcc.Graph(id='Spotify-streaming-month-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Artists Streamed by Month', className='chart-title'),
+                    dcc.Graph(id='Spotify-artists-month-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Tracks Streamed by Month', className='chart-title'),
+                    dcc.Graph(id='Spotify-tracks-month-bar-chart'),
+                ]),
+            ]),
+        ])
 
 
 
@@ -138,7 +156,7 @@ def update_youtube_weekday(year: Optional[int]):
         weekdays.append(WEEKDAYS[i])
         view_counts.append(round(len(views) / num_days_in_year, 2))
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Day': weekdays,
             'Views (Average)': view_counts,
@@ -146,6 +164,13 @@ def update_youtube_weekday(year: Optional[int]):
         x='Day',
         y='Views (Average)',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': WEEKDAYS
+        }
+    })
+    return figure
 
 @app.callback(
     Output('YouTube-month-bar-chart', 'figure'),
@@ -163,7 +188,7 @@ def update_youtube_month(year: Optional[int]):
         view_counts += [len(channel.views) for channel in channels]
         months += [MONTHS[i]] * len(channels)
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': months,
             'Views (Total)': view_counts,
@@ -173,6 +198,13 @@ def update_youtube_month(year: Optional[int]):
         y='Views (Total)',
         color='Channel',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 
 
@@ -234,7 +266,7 @@ def update_netflix_weekday(year: Optional[int], profile: Optional[str]):
         total_hours = round(sum([view.duration_seconds / 60 / 60 for view in movie_views]), 2)
         duration_hours.append(round(total_hours / num_days_in_year, 2))
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Day': weekdays,
             'Hours (Average)': duration_hours,
@@ -244,6 +276,13 @@ def update_netflix_weekday(year: Optional[int], profile: Optional[str]):
         y='Hours (Average)',
         color='Type',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': WEEKDAYS
+        }
+    })
+    return figure
 
 @app.callback(
     Output('Netflix-month-bar-chart', 'figure'),
@@ -262,7 +301,7 @@ def update_netflix_month(year: Optional[int], profile: Optional[str]):
         duration_hours += [round(show.duration_seconds / 60 / 60, 0) for show in shows]
         months += [MONTHS[i]] * len(shows)
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': months,
             'Hours (Total)': duration_hours,
@@ -272,6 +311,13 @@ def update_netflix_month(year: Optional[int], profile: Optional[str]):
         y='Hours (Total)',
         color='Shows',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 
 
@@ -311,7 +357,7 @@ def update_hinge_matches_weekday(year: Optional[int]):
         weekdays.append(WEEKDAYS[i])
         match_counts.append(len(user_rejected_matches))
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Weekday': weekdays,
             'Matches': match_counts,
@@ -321,6 +367,13 @@ def update_hinge_matches_weekday(year: Optional[int]):
         y='Matches',
         color='Type'
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': WEEKDAYS
+        }
+    })
+    return figure
 
 @app.callback(
     Output('Hinge-matches-month-bar-chart', 'figure'),
@@ -356,7 +409,7 @@ def update_hinge_matches_month(year: Optional[int]):
         months.append(MONTHS[i])
         match_counts.append(len(user_rejected_matches))
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': months,
             'Matches': match_counts,
@@ -366,6 +419,13 @@ def update_hinge_matches_month(year: Optional[int]):
         y='Matches',
         color='Type'
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 
 @app.callback(
@@ -375,7 +435,7 @@ def update_hinge_matches_month(year: Optional[int]):
 def update_hinge_messages_weekday(year: Optional[int]):
     parser = HingeMatchesParser(year=year)
     chats_by_weekday = parser.get_chats_by_weekday()
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Weekday': WEEKDAYS,
             'Messages Sent (Total)': [len(chats) for chats in chats_by_weekday],
@@ -383,6 +443,13 @@ def update_hinge_messages_weekday(year: Optional[int]):
         x='Weekday',
         y='Messages Sent (Total)',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': WEEKDAYS
+        }
+    })
+    return figure
 
 @app.callback(
     Output('Hinge-messages-month-bar-chart', 'figure'),
@@ -391,7 +458,7 @@ def update_hinge_messages_weekday(year: Optional[int]):
 def update_hinge_messages_month(year: Optional[int]):
     parser = HingeMatchesParser(year=year)
     chats_by_month = parser.get_chats_by_month()
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': MONTHS,
             'Messages Sent (Total)': [len(chats) for chats in chats_by_month],
@@ -399,6 +466,13 @@ def update_hinge_messages_month(year: Optional[int]):
         x='Month',
         y='Messages Sent (Total)',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 
 
@@ -413,7 +487,7 @@ def update_instagram_connections_month(year: Optional[int]):
     followers_by_month = parser.get_followers_by_month()
     following_by_month = parser.get_following_by_month()
 
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': MONTHS*2,
             'Connections': [len(followers) for followers in followers_by_month] + [len(following) for following in following_by_month],
@@ -423,15 +497,22 @@ def update_instagram_connections_month(year: Optional[int]):
         y='Connections',
         color='Type'
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 @app.callback(
     Output('Instagram-likes-month-bar-chart', 'figure'),
-    Input('year-dropdown', 'value')
+    Input('year-dropdown', 'value'),
 )
 def update_instagram_likes_month(year: Optional[int]):
     parser = InstagramLikesParser(year=year)
     likes_by_month = parser.get_likes_by_month()
-    return px.bar(
+    figure = px.bar(
         pd.DataFrame({
             'Month': MONTHS,
             'Likes': [len(likes) for likes in likes_by_month],
@@ -439,6 +520,108 @@ def update_instagram_likes_month(year: Optional[int]):
         x='Month',
         y='Likes',
     )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
+
+
+
+############### SPOTIFY ###############
+
+@app.callback(
+    Output('Spotify-streaming-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_streaming_month(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    stream_duration_by_month = streaming_history_parser.get_stream_duration_by_month()
+    figure = px.bar(
+        pd.DataFrame({
+            'Month': MONTHS,
+            'Duration (Hours)': [round(stream_duration / 60 / 60, 0) for stream_duration in stream_duration_by_month],
+        }),
+        x='Month',
+        y='Duration (Hours)',
+    )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
+
+@app.callback(
+    Output('Spotify-artists-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_artists_month(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    artists_by_month = streaming_history_parser.get_artists_by_month(min_threshold_stream_duration_seconds=60*60)  # Exclude artists listened less than an hour
+    artist_names: List[str] = []
+    months: List[str] = []
+    duration_hours: List[int] = []
+    for i in range(12):
+        artists = artists_by_month[i]
+        artist_names += [artist.name for artist in artists]
+        duration_hours += [round(artist.streamed_duration_seconds / 60 / 60, 1) for artist in artists]
+        months += [MONTHS[i]] * len(artists)
+
+    figure = px.bar(
+        pd.DataFrame({
+            'Month': months,
+            'Hours (Total)': duration_hours,
+            'Artists': artist_names,
+        }),
+        x='Month',
+        y='Hours (Total)',
+        color='Artists',
+    )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
+
+@app.callback(
+    Output('Spotify-tracks-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_tracks_month(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    tracks_by_month = streaming_history_parser.get_tracks_by_month(min_threshold_stream_duration_seconds=30*60)  # Exlude tracks listened less than 30 minutes
+    track_names: List[str] = []
+    months: List[str] = []
+    duration_hours: List[int] = []
+    for i in range(12):
+        tracks = tracks_by_month[i]
+        track_names += [track.name for track in tracks]
+        duration_hours += [round(track.streamed_duration_seconds / 60 / 60, 1) for track in tracks]
+        months += [MONTHS[i]] * len(tracks)
+
+    figure = px.bar(
+        pd.DataFrame({
+            'Month': months,
+            'Hours (Total)': duration_hours,
+            'Track': [track_name[:25] for track_name in track_names],
+        }),
+        x='Month',
+        y='Hours (Total)',
+        color='Track',
+    )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': MONTHS
+        }
+    })
+    return figure
 
 
 
