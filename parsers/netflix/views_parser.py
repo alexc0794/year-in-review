@@ -20,7 +20,7 @@ class ViewsParser:
     def __init__(self, profile: Optional[str] = None, year: Optional[int] = None) -> None:
         self.profile = profile
         self.year = year
-        filepath = '{0}/data/netflix-report/Content_Interaction/ViewingActivity.csv'.format(os.getcwd())
+        filepath = '{0}/data/netflix/netflix-report/Content_Interaction/ViewingActivity.csv'.format(os.getcwd())
 
         try:
             with open(filepath) as file:

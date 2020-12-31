@@ -12,7 +12,7 @@ class ViewsParser:
 
     def __init__(self, year: Optional[int]=None) -> None:
         self.year = year
-        filepath = "{0}/data/Takeout/YouTube and YouTube Music/history/watch-history.json".format(os.getcwd())
+        filepath = "{0}/data/google/Takeout/YouTube and YouTube Music/history/watch-history.json".format(os.getcwd())
 
         try:
             with open(filepath) as file:

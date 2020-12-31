@@ -25,7 +25,7 @@ class MatchesParser:
 
     def __init__(self, year: Optional[int] = None) -> None:
         self.year = year
-        filepath = '{0}/data/export/matches.json'.format(os.getcwd())
+        filepath = '{0}/data/hinge/export/matches.json'.format(os.getcwd())
         try:
             with open(filepath) as file:
                 self.matches_data = json.load(file)
@@ -35,7 +35,10 @@ class MatchesParser:
 
     @cached_property
     def matches(self) -> List[Match]:
-        return [Match.from_json(data=match_data) for match_data in self.matches_data]
+        matches = [Match.from_json(data=match_data) for match_data in self.matches_data]
+        if self.year:
+            return [match for match in matches if match.date.year == self.year]
+        return matches
 
     @property
     def like_accepted_matches(self) -> List[Match]:

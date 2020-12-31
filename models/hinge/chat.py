@@ -1,9 +1,8 @@
 import pytz
 from dataclasses import dataclass
-from dateutil.parser import parse
 from datetime import datetime
-from tzlocal import get_localzone
 from typing import Dict, Any
+from models import utc_timestamp_to_datetime
 
 
 @dataclass
@@ -13,13 +12,9 @@ class Chat:
 
     @staticmethod
     def from_json(data: Dict[str, Any]) -> 'Chat':
-        date = parse(data["timestamp"])
-        utc = pytz.timezone('UTC')
-        date = utc.localize(date)
-        date = date.astimezone(get_localzone())
         return Chat(
             body=data["body"],
-            date=date,
+            date=utc_timestamp_to_datetime(timestamp=data["timestamp"]),
         )
 
     def __str__(self) -> str:

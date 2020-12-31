@@ -1,13 +1,11 @@
 import pytz
 from dataclasses import dataclass
-from dateutil.parser import parse
 from datetime import datetime
-from tzlocal import get_localzone
-from dataclasses import dataclass
 from statistics import median
 from cached_property import cached_property
 from typing import Dict, Any, List, Optional
 from models.hinge.chat import Chat
+from models import utc_timestamp_to_datetime
 
 
 @dataclass
@@ -24,28 +22,20 @@ class Match:
         blocked = "block" in data
         match_made = "match" in data
 
-        date = None
         if "match" in data and len(data["match"]) > 0 and "timestamp" in data["match"][0]:
-            date = parse(data["match"][0]["timestamp"])
-
-        if not date and "block" in data and len(data["block"]) > 0 and "timestamp" in data["block"][0]:
-            date = parse(data["block"][0]["timestamp"])
-
-        if not date and "like" in data and len(data["like"]) > 0 and "timestamp" in data["like"][0]:
-            date = parse(data["like"][0]["timestamp"])
-
-        if date is None:
+            timestamp = data["match"][0]["timestamp"]
+        elif "block" in data and len(data["block"]) > 0 and "timestamp" in data["block"][0]:
+            timestamp = data["block"][0]["timestamp"]
+        elif "like" in data and len(data["like"]) > 0 and "timestamp" in data["like"][0]:
+            timestamp = data["like"][0]["timestamp"]
+        else:
             raise
-
-        utc = pytz.timezone('UTC')
-        date = utc.localize(date)
-        date = date.astimezone(get_localzone())
 
         return Match(
             liked=liked,
             blocked=blocked,
             match_made=match_made,
-            date=date,
+            date=utc_timestamp_to_datetime(timestamp=timestamp),
             chats=[Chat.from_json(data=chat_data) for chat_data in data.get('chats', [])],
         )
 

@@ -1,9 +1,8 @@
 import pytz
 from dataclasses import dataclass
-from dateutil.parser import parse
-from tzlocal import get_localzone
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+from models import utc_timestamp_to_datetime
 
 
 @dataclass
@@ -23,11 +22,7 @@ class View:
 
     @staticmethod
     def from_csv(columns: Dict[str, int], data: List[str]) -> 'View':
-        start_time = parse(data[columns['Start Time']])
-        utc = pytz.timezone('UTC')
-        start_time = utc.localize(start_time)
-        start_time = start_time.astimezone(get_localzone())
-
+        start_time = utc_timestamp_to_datetime(timestamp=data[columns['Start Time']])
         h, m, s = data[columns['Duration']].split(':')
         duration_seconds = int(h) * 3600 + int(m) * 60 + int(s)
 

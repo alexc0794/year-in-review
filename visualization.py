@@ -61,7 +61,7 @@ def render_content(tab):
                     dcc.Graph(id='YouTube-weekday-bar-chart'),
                 ]),
                 html.Div(className='chart', children=[
-                    html.H2(children='Videos Viewed by Month', className='chart-title'),
+                    html.H2(children='Channels Viewed by Month', className='chart-title'),
                     dcc.Graph(id='YouTube-month-bar-chart')
                 ]),
             ]),
