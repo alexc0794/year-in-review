@@ -11,9 +11,11 @@ from models.hinge.match import Match
 from parsers.youtube.views_parser import ViewsParser as YoutubeViewsParser
 from parsers.netflix.views_parser import ViewsParser as NetflixViewsParser
 from parsers.hinge.matches_parser import MatchesParser as HingeMatchesParser
+from parsers.instagram.connections_parser import ConnectionsParser as InstagramConnectionsParser
+from parsers.instagram.likes_parser import LikesParser as InstagramLikesParser
 
 
-PRODUCTS = ["YouTube", "Netflix", "Hinge"]
+PRODUCTS = ["YouTube", "Netflix", "Hinge", "Instagram"]
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.layout = html.Div(className='page', children=[
@@ -89,14 +91,27 @@ def render_content(tab):
                 ]),
             ]),
         ])
+    elif tab == 'Instagram-tab':
+        return html.Div(className="tab-content", children=[
+            html.Div(className='tab-content-row', children=[
+                html.Div(className='chart', children=[
+                    html.H2(children='Followers/Following by Month', className='chart-title'),
+                    dcc.Graph(id='Instagram-connections-month-bar-chart'),
+                ]),
+                html.Div(className='chart', children=[
+                    html.H2(children='Likes Given by Month', className='chart-title'),
+                    dcc.Graph(id='Instagram-likes-month-bar-chart'),
+                ]),
+            ]),
+        ])
 
 @app.callback(
     Output('YouTube-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_youtube_weekday_bar_chart(year: Optional[int]):
-    views_parser = YoutubeViewsParser(year=year)
-    views_by_weekday = views_parser.get_views_by_weekday()
+def update_youtube_weekday(year: Optional[int]):
+    parser = YoutubeViewsParser(year=year)
+    views_by_weekday = parser.get_views_by_weekday()
     types: List[str] = []
     weekdays: List[str] = []
     view_counts: List[int] = []
@@ -106,7 +121,7 @@ def update_youtube_weekday_bar_chart(year: Optional[int]):
         weekdays.append(WEEKDAYS[i])
         view_counts.append(round(len(views) / num_days_in_year, 2))
 
-    weekday_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Day": weekdays,
             "Views (Average)": view_counts,
@@ -114,15 +129,14 @@ def update_youtube_weekday_bar_chart(year: Optional[int]):
         x="Day",
         y="Views (Average)",
     )
-    return weekday_bar_chart
 
 @app.callback(
     Output('YouTube-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_youtube_month_bar_chart(year: Optional[int]):
-    views_parser = YoutubeViewsParser(year=year)
-    channels_by_month = views_parser.get_channels_by_month()
+def update_youtube_month(year: Optional[int]):
+    parser = YoutubeViewsParser(year=year)
+    channels_by_month = parser.get_channels_by_month()
     channel_names: List[str] = []
     months: List[str] = []
     view_counts: List[int] = []
@@ -132,7 +146,7 @@ def update_youtube_month_bar_chart(year: Optional[int]):
         view_counts += [len(channel.views) for channel in channels]
         months += [MONTHS[i]] * len(channels)
 
-    month_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Month": months,
             "Views (Total)": view_counts,
@@ -142,15 +156,14 @@ def update_youtube_month_bar_chart(year: Optional[int]):
         y="Views (Total)",
         color="Channel",
     )
-    return month_bar_chart
 
 @app.callback(
     Output('Netflix-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_netflix_weekday_bar_chart(year: Optional[int]):
-    views_parser = NetflixViewsParser(year=year)
-    views_by_weekday = views_parser.get_views_by_weekday()
+def update_netflix_weekday(year: Optional[int]):
+    parser = NetflixViewsParser(year=year)
+    views_by_weekday = parser.get_views_by_weekday()
     types: List[str] = []
     weekdays: List[str] = []
     duration_hours: List[int] = []
@@ -170,7 +183,7 @@ def update_netflix_weekday_bar_chart(year: Optional[int]):
         total_hours = round(sum([view.duration_seconds / 60 / 60 for view in movie_views]), 2)
         duration_hours.append(round(total_hours / num_days_in_year, 2))
 
-    weekday_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Day": weekdays,
             "Hours (Average)": duration_hours,
@@ -181,15 +194,13 @@ def update_netflix_weekday_bar_chart(year: Optional[int]):
         color="Type",
     )
 
-    return weekday_bar_chart
-
 @app.callback(
     Output('Netflix-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_netflix_month_bar_chart(year: Optional[int]):
-    views_parser = NetflixViewsParser(year=year)
-    shows_by_month = views_parser.get_shows_by_month()
+def update_netflix_month(year: Optional[int]):
+    parser = NetflixViewsParser(year=year)
+    shows_by_month = parser.get_shows_by_month()
     show_titles: List[str] = []
     months: List[str] = []
     duration_hours: List[int] = []
@@ -199,7 +210,7 @@ def update_netflix_month_bar_chart(year: Optional[int]):
         duration_hours += [round(show.duration_seconds / 60 / 60, 0) for show in shows]
         months += [MONTHS[i]] * len(shows)
 
-    month_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Month": months,
             "Hours (Total)": duration_hours,
@@ -209,15 +220,14 @@ def update_netflix_month_bar_chart(year: Optional[int]):
         y="Hours (Total)",
         color="Shows",
     )
-    return month_bar_chart
 
 @app.callback(
     Output('Hinge-matches-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_hinge_matches_weekday_bar_chart(year: Optional[int]):
-    matches_parser = HingeMatchesParser(year=year)
-    matches_by_weekday = matches_parser.get_matches_by_weekday()
+def update_hinge_matches_weekday(year: Optional[int]):
+    parser = HingeMatchesParser(year=year)
+    matches_by_weekday = parser.get_matches_by_weekday()
     types: List[str] = []
     weekdays: List[str] = []
     match_counts: List[int] = []
@@ -245,7 +255,7 @@ def update_hinge_matches_weekday_bar_chart(year: Optional[int]):
         weekdays.append(WEEKDAYS[i])
         match_counts.append(len(user_rejected_matches))
 
-    weekday_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Weekday": weekdays,
             "Matches": match_counts,
@@ -255,15 +265,14 @@ def update_hinge_matches_weekday_bar_chart(year: Optional[int]):
         y="Matches",
         color="Type"
     )
-    return weekday_bar_chart
 
 @app.callback(
     Output('Hinge-matches-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_hinge_matches_month_bar_chart(year: Optional[int]):
-    matches_parser = HingeMatchesParser(year=year)
-    matches_by_month = matches_parser.get_matches_by_month()
+def update_hinge_matches_month(year: Optional[int]):
+    parser = HingeMatchesParser(year=year)
+    matches_by_month = parser.get_matches_by_month()
     types: List[str] = []
     months: List[str] = []
     match_counts: List[int] = []
@@ -291,7 +300,7 @@ def update_hinge_matches_month_bar_chart(year: Optional[int]):
         months.append(MONTHS[i])
         match_counts.append(len(user_rejected_matches))
 
-    month_bar_chart = px.bar(
+    return px.bar(
         pd.DataFrame({
             "Month": months,
             "Matches": match_counts,
@@ -301,17 +310,16 @@ def update_hinge_matches_month_bar_chart(year: Optional[int]):
         y="Matches",
         color="Type"
     )
-    return month_bar_chart
 
 
 @app.callback(
     Output('Hinge-messages-weekday-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_hinge_messages_weekday_bar_chart(year: Optional[int]):
-    matches_parser = HingeMatchesParser(year=year)
-    chats_by_weekday = matches_parser.get_chats_by_weekday()
-    weekday_bar_chart = px.bar(
+def update_hinge_messages_weekday(year: Optional[int]):
+    parser = HingeMatchesParser(year=year)
+    chats_by_weekday = parser.get_chats_by_weekday()
+    return px.bar(
         pd.DataFrame({
             "Weekday": WEEKDAYS,
             "Messages Sent (Total)": [len(chats) for chats in chats_by_weekday],
@@ -319,16 +327,15 @@ def update_hinge_messages_weekday_bar_chart(year: Optional[int]):
         x="Weekday",
         y="Messages Sent (Total)",
     )
-    return weekday_bar_chart
 
 @app.callback(
     Output('Hinge-messages-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value')
 )
-def update_hinge_messages_month_bar_chart(year: Optional[int]):
-    matches_parser = HingeMatchesParser(year=year)
-    chats_by_month = matches_parser.get_chats_by_month()
-    month_bar_chart = px.bar(
+def update_hinge_messages_month(year: Optional[int]):
+    parser = HingeMatchesParser(year=year)
+    chats_by_month = parser.get_chats_by_month()
+    return px.bar(
         pd.DataFrame({
             "Month": MONTHS,
             "Messages Sent (Total)": [len(chats) for chats in chats_by_month],
@@ -336,7 +343,44 @@ def update_hinge_messages_month_bar_chart(year: Optional[int]):
         x="Month",
         y="Messages Sent (Total)",
     )
-    return month_bar_chart
+
+
+@app.callback(
+    Output('Instagram-connections-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_instagram_connections_month(year: Optional[int]):
+    parser = InstagramConnectionsParser(year=year)
+    followers_by_month = parser.get_followers_by_month()
+    following_by_month = parser.get_following_by_month()
+
+    return px.bar(
+        pd.DataFrame({
+            "Month": MONTHS*2,
+            "Connections": [len(followers) for followers in followers_by_month] + [len(following) for following in following_by_month],
+            "Type": ["Followers"]*12 + ["Following"]*12
+        }),
+        x="Month",
+        y="Connections",
+        color="Type"
+    )
+
+@app.callback(
+    Output('Instagram-likes-month-bar-chart', 'figure'),
+    Input('year-dropdown', 'value')
+)
+def update_instagram_likes_month(year: Optional[int]):
+    parser = InstagramLikesParser(year=year)
+    likes_by_month = parser.get_likes_by_month()
+    return px.bar(
+        pd.DataFrame({
+            "Month": MONTHS,
+            "Likes": [len(likes) for likes in likes_by_month],
+        }),
+        x="Month",
+        y="Likes",
+    )
+
 
 
 if __name__ == '__main__':
