@@ -10,6 +10,11 @@ body {
   font-size: 20pt;
 }
 
+.tab-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(700px, 1fr));
+}
+
 .tab-content-row {
   display: flex;
   justify-content: space-evenly;
@@ -27,8 +32,7 @@ body {
 }
 
 .chart {
-  width: 48%;
-  margin: 20px 0;
+  margin: 20px;
   padding: 5px;
   border-radius: 5px;
   box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
