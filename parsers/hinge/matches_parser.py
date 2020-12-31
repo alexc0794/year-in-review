@@ -1,11 +1,9 @@
-import os
-import csv
-import json
 import math
 import numpy as np
 from cached_property import cached_property
 from statistics import median
 from typing import Dict, Any, List, Optional
+from parsers import JsonParser
 from models.hinge.match import Match
 from models.hinge.chat import Chat
 
@@ -19,23 +17,14 @@ def reject_outliers(matches: List[Match], m=10) -> List[bool]:
     return abs(chat_lengths - np.mean(chat_lengths)) < m * np.std(chat_lengths)
 
 
-class MatchesParser:
-    year: Optional[int]
-    matches_data: List[Dict[str, Any]]
+class MatchesParser(JsonParser):
 
     def __init__(self, year: Optional[int] = None) -> None:
-        self.year = year
-        filepath = '{0}/data/hinge/export/matches.json'.format(os.getcwd())
-        try:
-            with open(filepath) as file:
-                self.matches_data = json.load(file)
-        except:
-            print('There was a problem loading {0}'.format(filepath))
-            raise
+        super().__init__(relative_path='data/hinge/export/matches.json', year=year)
 
     @cached_property
     def matches(self) -> List[Match]:
-        matches = [Match.from_json(data=match_data) for match_data in self.matches_data]
+        matches = [Match.from_json(data=match_data) for match_data in self.data]
         if self.year:
             return [match for match in matches if match.date.year == self.year]
         return matches

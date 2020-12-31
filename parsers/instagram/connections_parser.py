@@ -1,28 +1,17 @@
-import json
-import os
 from cached_property import cached_property
 from typing import Dict, Any, List, Optional
+from parsers import JsonParser
 from models.instagram.connection import Connection
 
 
-class ConnectionsParser:
-    year: Optional[int]
-    connections_data: Dict[str, Any]
+class ConnectionsParser(JsonParser):
 
     def __init__(self, year: Optional[int]=None) -> None:
-        self.year = year
-        filepath = "{0}/data/instagram/connections.json".format(os.getcwd())
-
-        try:
-            with open(filepath) as file:
-                self.connections_data = json.load(file)
-        except:
-            print('There was a problem loading {0}'.format(filepath))
-            raise
+        super().__init__(relative_path='data/instagram/connections.json', year=year)
 
     @cached_property
     def followers(self) -> List[Connection]:
-        followers_data = self.connections_data["followers"]
+        followers_data = self.data["followers"]
         connections = [Connection(name=name, timestamp=followers_data[name]) for name in list(followers_data.keys())]
         if self.year:
             return [connection for connection in connections if connection.date.year == self.year]
@@ -30,7 +19,7 @@ class ConnectionsParser:
 
     @cached_property
     def following(self) -> List[Connection]:
-        following_data = self.connections_data["following"]
+        following_data = self.data["following"]
         connections = [Connection(name=name, timestamp=following_data[name]) for name in list(following_data.keys())]
         if self.year:
             return [connection for connection in connections if connection.date.year == self.year]

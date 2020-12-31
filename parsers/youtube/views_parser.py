@@ -1,30 +1,22 @@
-import json
-import os
 from cached_property import cached_property
 from typing import Dict, Any, List, Optional
+from parsers import JsonParser
 from models.youtube.view import View
 from models.youtube.channel import Channel
 
 
-class ViewsParser:
-    year: Optional[int]
-    views_data: List[Dict[str, Any]]
+class ViewsParser(JsonParser):
 
     def __init__(self, year: Optional[int]=None) -> None:
-        self.year = year
-        filepath = "{0}/data/google/Takeout/YouTube and YouTube Music/history/watch-history.json".format(os.getcwd())
-
-        try:
-            with open(filepath) as file:
-                self.views_data = json.load(file)
-        except:
-            print('There was a problem loading {0}'.format(filepath))
-            raise
+        super().__init__(
+            relative_path='data/google/Takeout/YouTube and YouTube Music/history/watch-history.json',
+            year=year,
+        )
 
     @cached_property
     def views(self) -> List[View]:
         views = []
-        for view_data in self.views_data:
+        for view_data in self.data:
             view = View.from_json(data=view_data)
             if not view.url:
                 continue

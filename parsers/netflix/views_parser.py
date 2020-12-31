@@ -1,48 +1,38 @@
-import os
-import csv
 import math
 from cached_property import cached_property
 from dateutil.parser import parse
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Set, Tuple
+from parsers import CsvParser
 from models.netflix.view import View
 from models.netflix.show import Show
 
 FIVE_MINUTES_IN_SECONDS = 10 * 60
 DEFAULT_SHOW_TITLE = 'Other (i.e. Movie)'
 
-class ViewsParser:
+
+class ViewsParser(CsvParser):
     profile: Optional[str]
-    year: Optional[int]
-    views_columns: List[str]
-    views_data: List[List[str]]
 
     def __init__(self, profile: Optional[str] = None, year: Optional[int] = None) -> None:
         self.profile = profile
-        self.year = year
-        filepath = '{0}/data/netflix/netflix-report/Content_Interaction/ViewingActivity.csv'.format(os.getcwd())
-
-        try:
-            with open(filepath) as file:
-                views_data = list(csv.reader(file, delimiter=','))
-                self.views_columns = views_data[0]
-                self.views_data = views_data[1:]
-        except:
-            print('There was a problem loading {0}'.format(filepath))
-            raise
+        super().__init__(
+            relative_path='data/netflix/netflix-report/Content_Interaction/ViewingActivity.csv',
+            year=year,
+        )
 
     @property
     def columns_to_index_map(self) -> Dict[str, int]:
         map = {}
-        for i in range(len(self.views_columns)):
-            column_name = self.views_columns[i]
+        for i in range(len(self.columns)):
+            column_name = self.columns[i]
             map[column_name] = i
         return map
 
     @cached_property
     def views(self) -> List[View]:
         views = []
-        for view_data in self.views_data:
+        for view_data in self.data:
             views.append(View.from_csv(columns=self.columns_to_index_map, data=view_data))
 
         views = [view for view in views if not view.supplemental_video_type and view.duration_seconds > FIVE_MINUTES_IN_SECONDS]
