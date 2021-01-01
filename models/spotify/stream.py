@@ -19,3 +19,7 @@ class Stream:
             track_name=data['trackName'],
             duration_milliseconds=data['msPlayed']
         )
+
+    @property
+    def skipped(self) -> bool:
+        return self.duration_milliseconds < 10000  # Is determined to be skipped if listened to less than 10 seconds

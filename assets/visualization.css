@@ -10,14 +10,33 @@ body {
   font-size: 20pt;
 }
 
+.tab--selected {
+  font-weight: bold;
+}
+
 .tab-content-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(700px, 1fr));
 }
 
-.tab-content-row {
-  display: flex;
-  justify-content: space-evenly;
+.tab-content-list,
+.tab-content-chart {
+  margin: 20px;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.list {
+  font-size: 16pt;
+  margin-left: 20px;
+  line-height: 1.5;
+}
+
+.list-title,
+.chart-title {
+  padding: 0 20px;
+  font-size: 22pt;
 }
 
 .page-title {
@@ -29,16 +48,4 @@ body {
 
 .year-dropdown {
   font-weight: bold;
-}
-
-.chart {
-  margin: 20px;
-  padding: 5px;
-  border-radius: 5px;
-  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-.chart-title {
-  padding: 0 20px;
-  font-size: 22pt;
 }

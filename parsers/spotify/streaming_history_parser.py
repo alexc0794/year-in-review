@@ -63,6 +63,31 @@ class StreamingHistoryParser(MultiJsonParser):
         tracks.sort(key=lambda track: track.streamed_duration_seconds, reverse=True)
         return tracks
 
+    def get_most_skipped_tracks(self) -> List[Track]:
+        tracks = self.tracks
+        tracks.sort(key=lambda track: len([stream for stream in track.streams if stream.skipped]), reverse=True)
+        return tracks
+
+    def get_most_skipped_artists(self) -> List[Artist]:
+        artists = self.artists
+        artists.sort(key=lambda artist: len([stream for stream in artist.streams if stream.skipped]), reverse=True)
+        return artists
+
+    def get_streams_by_weekday(self) -> List[List[Stream]]:
+        streams_by_weekday = [[] for _ in range(7)]
+        for stream in self.streams:
+            streams_by_weekday[stream.end_time.weekday()].append(stream)
+        return streams_by_weekday
+
+    def get_stream_duration_by_weekday(self) -> List[int]:
+        streams_by_weekday = self.get_streams_by_weekday()
+        stream_duration_by_weekday = [0]*7
+        for weekday in range(7):
+            streams = streams_by_weekday[weekday]
+            stream_duration_by_weekday[weekday] = int(round(sum([stream.duration_milliseconds / 1000 for stream in streams]), 0))
+
+        return stream_duration_by_weekday
+
     def get_streams_by_month(self) -> List[List[Stream]]:
         streams_by_month = [[] for _ in range(12)]
         for stream in self.streams:

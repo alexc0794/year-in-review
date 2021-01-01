@@ -10,6 +10,10 @@ class Track:
     name: str
     streams: List[Stream]
 
+    @property
+    def artist_name(self) -> Optional[str]:
+        return self.streams[0].artist_name if len(self.streams) > 0 else None
+
     @cached_property
     def streamed_duration_seconds(self) -> int:
         milliseconds = sum([stream.duration_milliseconds for stream in self.streams])

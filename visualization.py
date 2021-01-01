@@ -42,7 +42,7 @@ app.layout = html.Div(className='page', children=[
     Output('tabs-content', 'children'),
     Input('tabs', 'value')
 )
-def render_content(tab):
+def render(tab):
     if tab == 'Netflix-tab':
         return html.Div(className='tab-content', children=[
             html.Div(className='input-wrapper', children=[
@@ -56,16 +56,16 @@ def render_content(tab):
                 # html.Label(htmlFor='profile', className='input-label', children='Profile')
             ]),
             html.H1(id='Netflix-total-hours'),
-            html.Div(children=[
-                html.H2(children='Most Watched TV Shows'),
-                html.Ol(id='Netflix-top-tv-shows'),
+            html.Div(className='tab-content-list', children=[
+                html.H2(children='Most Watched TV Shows', className='list-title'),
+                html.Ol(id='Netflix-top-tv-shows', className='list', children='Loading...'),
             ]),
             html.Div(className='tab-content-grid', children=[
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Hours Watched per Weekday', className='chart-title'),
                     dcc.Graph(id='Netflix-weekday-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Hours Watched by Month', className='chart-title'),
                     dcc.Graph(id='Netflix-month-bar-chart')
                 ]),
@@ -74,11 +74,11 @@ def render_content(tab):
     elif tab == 'YouTube-tab':
         return html.Div(className='tab-content', children=[
             html.Div(className='tab-content-grid', children=[
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Videos Viewed per Weekday', className='chart-title'),
                     dcc.Graph(id='YouTube-weekday-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Channels Viewed by Month', className='chart-title'),
                     dcc.Graph(id='YouTube-month-bar-chart')
                 ]),
@@ -87,19 +87,19 @@ def render_content(tab):
     elif tab == 'Hinge-tab':
         return html.Div(className='tab-content', children=[
             html.Div(className='tab-content-grid', children=[
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Match Results by Weekday', className='chart-title'),
                     dcc.Graph(id='Hinge-matches-weekday-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Match Results by Month', className='chart-title'),
                     dcc.Graph(id='Hinge-matches-month-bar-chart')
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Messages Sent per Weekday', className='chart-title'),
                     dcc.Graph(id='Hinge-messages-weekday-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Messages Sent per Month', className='chart-title'),
                     dcc.Graph(id='Hinge-messages-month-bar-chart')
                 ]),
@@ -108,11 +108,11 @@ def render_content(tab):
     elif tab == 'Instagram-tab':
         return html.Div(className='tab-content', children=[
             html.Div(className='tab-content-grid', children=[
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Followers/Following by Month', className='chart-title'),
                     dcc.Graph(id='Instagram-connections-month-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
+                html.Div(className='tab-content-chart', children=[
                     html.H2(children='Likes Given by Month', className='chart-title'),
                     dcc.Graph(id='Instagram-likes-month-bar-chart'),
                 ]),
@@ -121,18 +121,40 @@ def render_content(tab):
     elif tab == 'Spotify-tab':
         return html.Div(className='tab-content', children=[
             html.Div(className='tab-content-grid', children=[
-                html.Div(className='chart', children=[
-                    html.H2(children='Streaming by Month', className='chart-title'),
+                html.Div(className='tab-content-list', children=[
+                    html.H2(children='Most Streamed Artists', className='list-title'),
+                    html.Ol(id='Spotify-top-artists', className='list', children='Loading...'),
+                ]),
+                html.Div(className='tab-content-list', children=[
+                    html.H2(children='Most Streamed Tracks', className='list-title'),
+                    html.Ol(id='Spotify-top-tracks', className='list', children='Loading...'),
+                ]),
+            ]),
+            html.Div(className='tab-content-grid', children=[
+                html.Div(className='tab-content-chart', children=[
+                    html.H2(children='Streaming Activity per Weekday', className='chart-title'),
+                    dcc.Graph(id='Spotify-streaming-weekday-bar-chart'),
+                ]),
+                html.Div(className='tab-content-chart', children=[
+                    html.H2(children='Streaming Activity per Month', className='chart-title'),
                     dcc.Graph(id='Spotify-streaming-month-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
-                    html.H2(children='Artists Streamed by Month', className='chart-title'),
+                html.Div(className='tab-content-chart', children=[
+                    html.H2(children='Artists Streamed per Month', className='chart-title'),
                     dcc.Graph(id='Spotify-artists-month-bar-chart'),
                 ]),
-                html.Div(className='chart', children=[
-                    html.H2(children='Tracks Streamed by Month', className='chart-title'),
+                html.Div(className='tab-content-chart', children=[
+                    html.H2(children='Artists Streamed per Month', className='chart-title'),
+                    dcc.Graph(id='Spotify-artists-month-sunburst'),
+                ]),
+                html.Div(className='tab-content-chart', children=[
+                    html.H2(children='Tracks Streamed per Month', className='chart-title'),
                     dcc.Graph(id='Spotify-tracks-month-bar-chart'),
                 ]),
+                # html.Div(className='tab-content-chart', children=[
+                #     html.H2(children='Top Artist Timeline', className='chart-title'),
+                #     dcc.Graph(id='Spotify-top-artist-gantt-chart'),
+                # ]),
             ]),
         ])
 
@@ -533,6 +555,55 @@ def update_instagram_likes_month(year: Optional[int]):
 ############### SPOTIFY ###############
 
 @app.callback(
+    Output('Spotify-top-artists', 'children'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_top_artists(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    artists = streaming_history_parser.get_most_streamed_artists_by_duration()[:10]
+    return [
+        html.Li(
+            children='{0}: {1} hours'.format(artist.name, round(artist.streamed_duration_seconds / 60 / 60, 1))
+        ) for artist in artists
+    ]
+
+@app.callback(
+    Output('Spotify-top-tracks', 'children'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_top_tracks(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    tracks = streaming_history_parser.get_most_streamed_tracks_by_duration()[:10]
+    return [
+        html.Li(
+            children='{0}: {1} hours'.format(track.name, round(track.streamed_duration_seconds / 60 / 60, 1))
+        ) for track in tracks
+    ]
+
+@app.callback(
+    Output('Spotify-streaming-weekday-bar-chart', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_streaming_weekday(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    stream_duration_by_weekday = streaming_history_parser.get_stream_duration_by_weekday()
+    figure = px.bar(
+        pd.DataFrame({
+            'Weekday': WEEKDAYS,
+            'Duration (Hours)': [round(stream_duration / 60 / 60, 0) for stream_duration in stream_duration_by_weekday],
+        }),
+        x='Weekday',
+        y='Duration (Hours)',
+    )
+    figure.update_layout({
+        'xaxis':{
+            'categoryorder': 'array',
+            'categoryarray': WEEKDAYS
+        }
+    })
+    return figure
+
+@app.callback(
     Output('Spotify-streaming-month-bar-chart', 'figure'),
     Input('year-dropdown', 'value'),
 )
@@ -623,6 +694,47 @@ def update_spotify_tracks_month(year: Optional[int]):
     })
     return figure
 
+
+@app.callback(
+    Output('Spotify-artists-month-sunburst', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_artists_month_sunburst(year: Optional[int]):
+    streaming_history_parser = SpotifyStreamingHistoryParser(year=year)
+    tracks_by_month = streaming_history_parser.get_tracks_by_month(min_threshold_stream_duration_seconds=60*60)  # Exlude tracks listened less than an hour
+    track_names: List[str] = []
+    artist_names: List[str] = []
+    months: List[str] = []
+    duration_hours: List[int] = []
+    for i in range(12):
+        tracks = tracks_by_month[i]
+        track_names += [track.name for track in tracks]
+        artist_names += [track.artist_name for track in tracks]
+        duration_hours += [round(track.streamed_duration_seconds / 60 / 60, 1) for track in tracks]
+        months += [MONTHS[i]] * len(tracks)
+
+    figure = px.sunburst(
+        pd.DataFrame({
+            'Month': months,
+            'Hours (Total)': duration_hours,
+            'Artist': artist_names,
+            'Track': [track_name[:25] for track_name in track_names],
+        }),
+        path=['Month', 'Artist', 'Track'],
+        values='Hours (Total)',
+    )
+    return figure
+
+
+@app.callback(
+    Output('Spotify-top-artist-gantt-chart', 'figure'),
+    Input('year-dropdown', 'value'),
+)
+def update_spotify_artists_month_gantt(year: Optional[int]):
+    """
+    Timeline of the top artist throughout the year
+    """
+    pass
 
 
 if __name__ == '__main__':
