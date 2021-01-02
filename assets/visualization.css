@@ -1,5 +1,5 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .page {
@@ -29,8 +29,28 @@ body {
 
 .list {
   font-size: 16pt;
-  margin-left: 20px;
   line-height: 1.5;
+  list-style: none;
+  counter-reset: counter;
+  padding-left: 20px;
+}
+
+.list li {
+  counter-increment: counter;
+  margin: 0.25rem;
+}
+
+.list li::before {
+  content: counter(counter);
+  background: black;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: inline-block;
+  line-height: 2rem;
+  color: white;
+  text-align: center;
+  margin-right: 0.5rem;
 }
 
 .list-title,
@@ -43,9 +63,5 @@ body {
 }
 
 .year-dropdown-wrapper {
-  margin: 10px 0;
-}
-
-.year-dropdown {
-  font-weight: bold;
+  margin: 10px 0 30px;
 }

@@ -1,0 +1,46 @@
+.input-wrapper {
+  position: relative;
+  margin: 40px auto;
+}
+
+.input {
+  line-height: 2em;
+  margin: 0;
+  padding-left: 10px;
+  width: 100%;
+  font-size: 16pt;
+  border: 1px solid transparent;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.input:focus {
+  border: 1px solid #2c7ac9;
+}
+
+.input-label {
+  display: block;
+  position: absolute;
+  opacity: 0;
+  bottom: 2.4rem;
+  color: #5d5d5d;
+  transition: 0.2s ease-in-out transform;
+  font-size: 16px;
+}
+
+.input:placeholder-shown + .input-label {
+  visibility: hidden;
+  z-index: -1;
+  transition: 0.2s ease-in-out;
+}
+
+.input:not(:placeholder-shown) + .input-label,
+.input:focus:not(:placeholder-shown) + .input-label {
+  visibility: visible;
+  z-index: 1;
+  opacity: 1;
+  transform: translateY(-10px);
+  transition: 0.2s ease-in-out transform;
+}

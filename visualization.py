@@ -14,6 +14,8 @@ from parsers.hinge.matches_parser import MatchesParser as HingeMatchesParser
 from parsers.instagram.connections_parser import ConnectionsParser as InstagramConnectionsParser
 from parsers.instagram.likes_parser import LikesParser as InstagramLikesParser
 from parsers.spotify.streaming_history_parser import StreamingHistoryParser as SpotifyStreamingHistoryParser
+from components.loading import loading
+from components.input import input
 
 
 PRODUCTS = ['YouTube', 'Netflix', 'Hinge', 'Instagram', 'Spotify']
@@ -31,7 +33,7 @@ app.layout = html.Div(className='page', children=[
     ]),
     dcc.Tabs(
         id='tabs',
-        value='Spotify-tab',
+        value='Netflix-tab',
         className='tab',
         children=[dcc.Tab(label=product, value='{0}-tab'.format(product)) for product in PRODUCTS]
     ),
@@ -45,20 +47,11 @@ app.layout = html.Div(className='page', children=[
 def render(tab):
     if tab == 'Netflix-tab':
         return html.Div(className='tab-content', children=[
-            html.Div(className='input-wrapper', children=[
-                dcc.Input(
-                    id='Netflix-profile-input',
-                    debounce=True,
-                    name='profile',
-                    className='input',
-                    placeholder='Profile'
-                ),
-                # html.Label(htmlFor='profile', className='input-label', children='Profile')
-            ]),
+            input(id='Netflix-profile-input', placeholder='Profile'),
             html.H1(id='Netflix-total-hours'),
             html.Div(className='tab-content-list', children=[
                 html.H2(children='Most Watched TV Shows', className='list-title'),
-                html.Ol(id='Netflix-top-tv-shows', className='list', children='Loading...'),
+                html.Ol(id='Netflix-top-tv-shows', className='list', children=loading()),
             ]),
             html.Div(className='tab-content-grid', children=[
                 html.Div(className='tab-content-chart', children=[
@@ -123,11 +116,11 @@ def render(tab):
             html.Div(className='tab-content-grid', children=[
                 html.Div(className='tab-content-list', children=[
                     html.H2(children='Most Streamed Artists', className='list-title'),
-                    html.Ol(id='Spotify-top-artists', className='list', children='Loading...'),
+                    html.Ol(id='Spotify-top-artists', className='list', children=loading()),
                 ]),
                 html.Div(className='tab-content-list', children=[
                     html.H2(children='Most Streamed Tracks', className='list-title'),
-                    html.Ol(id='Spotify-top-tracks', className='list', children='Loading...'),
+                    html.Ol(id='Spotify-top-tracks', className='list', children=loading()),
                 ]),
             ]),
             html.Div(className='tab-content-grid', children=[
