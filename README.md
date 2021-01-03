@@ -27,8 +27,29 @@ _0-10 minutes_
 You likely already have Python3 installed by default. **Be sure to use `python3` not `python`.** To check on MacOS, follow [these instructions](https://realpython.com/installing-python/#how-to-check-your-python-version-on-a-mac).
 If not, follow [these steps](https://realpython.com/installing-python/).
 
-## Scripts
+## Run it!
 
-### visualization.py
+### Visualizations
 
 This is the best way to view your Year in Review. To start it up, move to the `year-in-review` folder in your terminal and run `python3 visualization.py`. This will run a local server and print the URL in your terminal. It should look something like `Dash is running on http://0.0.0.0:8050/`. Open your web browser and go to that URL.
+
+#### Instagram
+
+TODO
+
+#### YouTube
+
+![YouTube visualization](assets/images/youtube-visualization.png)
+
+#### Netflix
+
+![Netflix visualization](assets/images/netflix-visualization.png)
+
+#### Spotify
+
+![Spotify visualization 1](assets/images/spotify-visualization.png)
+![Spotify visualization 2](assets/images/spotify-visualization2.png)
+
+#### Hinge
+
+![Hinge visualization](assets/images/hinge-visualization.png)
